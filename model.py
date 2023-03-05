@@ -28,7 +28,7 @@ from torch.nn import functional as F
 @dataclass
 class LLMConfig:
     vocab_size: int = 250880
-    n_layers: int = 30
+    num_hidden_layers: int = 30
     n_head: int = 32
     hidden_size: int = 4096
     hidden_dropout: float = 0.0
@@ -500,7 +500,7 @@ BLOOM_INPUTS_DOCSTRING = r"""
 
 class BloomModel(nn.Module):
     def __init__(self, config: LLMConfig):
-        super().__init__(config)
+        super().__init__()
 
         self.embed_dim = config.hidden_size
         self.num_heads = config.n_head
@@ -518,7 +518,8 @@ class BloomModel(nn.Module):
         self.gradient_checkpointing = False
 
         # Initialize weights and apply final processing
-        self.post_init()
+        # FIXME: we only load from pretrained, don't need init
+        # self.post_init()
 
     def get_input_embeddings(self):
         return self.word_embeddings
@@ -675,12 +676,13 @@ class BloomForCausalLM(nn.Module):
     _keys_to_ignore_on_load_missing = [r"h.*.self_attention.scale_mask_softmax.causal_mask", r"lm_head.weight"]
 
     def __init__(self, config: LLMConfig):
-        super().__init__(config)
+        super().__init__()
         self.transformer = BloomModel(config)
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
 
         # Initialize weights and apply final processing
-        self.post_init()
+        # FIXME: we only load from pretrained, don't need init
+        # self.post_init()
 
     def get_output_embeddings(self):
         return self.lm_head
