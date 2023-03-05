@@ -80,7 +80,7 @@ class LLMConfig:
 
     output_hidden_states: bool = False
     output_attentions: bool = False
-    use_cache: bool = False
+    use_cache: bool = True
 
 def _make_causal_mask(
     input_ids_shape: torch.Size, device: torch.device, past_key_values_length: int
