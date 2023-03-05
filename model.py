@@ -78,6 +78,10 @@ class LLMConfig:
     masked_softmax_fusion: bool = True
     apply_residual_connection_post_layernorm: bool = False
 
+    output_hidden_states: bool = False
+    output_attentions: bool = False
+    use_cache: bool = False
+
 def _make_causal_mask(
     input_ids_shape: torch.Size, device: torch.device, past_key_values_length: int
 ) -> torch.BoolTensor:
@@ -415,6 +419,7 @@ class BloomBlock(nn.Module):
         self.apply_residual_connection_post_layernorm = config.apply_residual_connection_post_layernorm
         self.hidden_dropout = config.hidden_dropout
 
+
     def forward(
         self,
         hidden_states: torch.Tensor,
@@ -560,6 +565,8 @@ class BloomModel(nn.Module):
         # Initialize weights and apply final processing
         # FIXME: we only load from pretrained, don't need init
         # self.post_init()
+
+        self.config = config;
 
     def get_input_embeddings(self):
         return self.word_embeddings
