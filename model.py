@@ -25,6 +25,46 @@ from torch import nn
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, LayerNorm, MSELoss
 from torch.nn import functional as F
 
+def save_bloomz_7b1_mt():
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    checkpoint = "bigscience/bloomz-7b1-mt"
+    model = AutoModelForCausalLM.from_pretrained(checkpoint)
+
+    path = "bloomz-7b1-mt/"
+
+    torch.save(model.transformer.word_embeddings.state_dict(), path + "word_embeddings.pth");
+    torch.save(model.transformer.word_embeddings_layernorm.state_dict(), path + "word_embeddings_layernorm.pth");
+    torch.save(model.transformer.ln_f.state_dict(), path + "ln_f.pth");
+    torch.save(model.lm_head.state_dict(), path + "lm_head.pth");
+
+    for i in range(30):
+        hname = "h_" + str(i) + ".pth";
+        print("saving.. " + str(i)  + " attention");
+        torch.save(model.transformer.h[i].state_dict(), path + hname);
+
+
+def load_bloomz_7b1_mt():
+    print("Creating a empty model...")
+    config = LLMConfig();
+    model = BloomForCausalLM(config);
+    model.eval();
+
+    print("Loading embeddings...")
+    config = LLMConfig();
+    path = "bloomz-7b1-mt/"
+    model.transformer.word_embeddings.load_state_dict( torch.load( path + "word_embeddings.pth") );
+    model.transformer.word_embeddings_layernorm.load_state_dict( torch.load( path + "word_embeddings_layernorm.pth") );
+    model.transformer.ln_f.load_state_dict( torch.load( path + "ln_f.pth") );
+    model.lm_head.load_state_dict( torch.load( path + "lm_head.pth") );
+
+    for i in range(30):
+        hname = "h_" + str(i) + ".pth";
+        print("load.. " + str(i)  + " attention");
+        model.transformer.h[i].load_state_dict( torch.load(path + hname) );
+
+    return config, model
+
 @dataclass
 class LLMConfig:
     vocab_size: int = 250880
